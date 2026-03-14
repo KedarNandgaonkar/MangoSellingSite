@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MangoStore – Shop</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --orange:#ff7b00;--deep:#e65c00;--golden:#ffb347;
+  --cream:#fffaf2;--light:#fff8ee;--text:#1a1208;
+  --border:#f0e4d0;--green:#2e7d32;--red:#c62828;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--cream);color:var(--text);}
+a{text-decoration:none;color:inherit;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--deep);color:#fff;font-size:12px;letter-spacing:1.5px;text-align:center;padding:7px;text-transform:uppercase;}
+
+/* ── NAVBAR ── */
+.navbar{background:#fff;border-bottom:1px solid var(--border);padding:14px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,0.05);}
+.brand{font-family:'Playfair Display',serif;font-size:24px;font-weight:700;background:linear-gradient(135deg,var(--deep),var(--golden));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.nav-links{display:flex;gap:28px;align-items:center;}
+.nav-links a{font-size:14px;font-weight:500;color:#555;letter-spacing:0.5px;transition:color 0.2s;}
+.nav-links a:hover{color:var(--orange);}
+.cart-btn{position:relative;background:var(--orange);color:#fff;border:none;padding:10px 20px;border-radius:30px;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;transition:background 0.2s,transform 0.2s;}
+.cart-btn:hover{background:var(--deep);transform:scale(1.04);}
+.cart-count{background:#fff;color:var(--orange);border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+
+/* ── PAGE SECTIONS ── */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ── SHOP PAGE ── */
+.shop-hero{background:linear-gradient(135deg,var(--deep) 0%,var(--golden) 100%);color:#fff;padding:60px 0 50px;text-align:center;}
+.shop-hero h1{font-family:'Playfair Display',serif;font-size:42px;margin-bottom:8px;}
+.shop-hero p{opacity:0.85;font-size:15px;letter-spacing:1px;}
+
+.filter-bar{background:#fff;border-bottom:1px solid var(--border);padding:14px 0;}
+.filter-bar select,.filter-bar input{border:1px solid var(--border);border-radius:8px;padding:8px 14px;font-size:13px;outline:none;font-family:'DM Sans',sans-serif;}
+.filter-bar select:focus,.filter-bar input:focus{border-color:var(--orange);}
+
+.product-grid{padding:50px 0;}
+
+/* Product card */
+.pcard{background:#fff;border-radius:16px;overflow:hidden;border:1px solid var(--border);transition:transform 0.3s,box-shadow 0.3s;}
+.pcard:hover{transform:translateY(-6px);box-shadow:0 16px 40px rgba(255,100,0,0.14);}
+.pcard-img{height:210px;overflow:hidden;position:relative;}
+.pcard-img img{width:100%;height:100%;object-fit:cover;transition:transform 0.4s;}
+.pcard:hover .pcard-img img{transform:scale(1.08);}
+.pcard-badge{position:absolute;top:12px;left:12px;background:var(--orange);color:#fff;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 10px;border-radius:20px;}
+.pcard-body{padding:20px;}
+.pcard-body h5{font-family:'Playfair Display',serif;font-size:18px;margin-bottom:4px;}
+.pcard-body .desc{font-size:13px;color:#888;margin-bottom:12px;line-height:1.6;}
+.pcard-footer{display:flex;align-items:center;justify-content:space-between;}
+.price{font-size:18px;font-weight:700;color:var(--deep);}
+.price small{font-size:12px;color:#aaa;font-weight:400;margin-left:4px;}
+.qty-ctrl{display:flex;align-items:center;gap:8px;margin-top:12px;}
+.qty-ctrl button{width:30px;height:30px;border:1px solid var(--border);background:#fff;border-radius:50%;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:border-color 0.2s,color 0.2s;}
+.qty-ctrl button:hover{border-color:var(--orange);color:var(--orange);}
+.qty-ctrl span{font-size:15px;font-weight:600;min-width:24px;text-align:center;}
+.btn-addcart{width:100%;margin-top:14px;padding:11px;background:linear-gradient(135deg,var(--orange),var(--golden));color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:600;cursor:pointer;transition:opacity 0.2s,transform 0.2s;}
+.btn-addcart:hover{opacity:0.9;transform:scale(1.02);}
+.btn-addcart.added{background:linear-gradient(135deg,var(--green),#43a047);}
+
+/* ── CART PAGE ── */
+.cart-page{padding:50px 0;min-height:60vh;}
+.cart-page h2{font-family:'Playfair Display',serif;font-size:34px;margin-bottom:32px;}
+.cart-empty{text-align:center;padding:80px 0;color:#aaa;}
+.cart-empty .emoji{font-size:60px;margin-bottom:16px;}
+
+.cart-table{width:100%;border-collapse:collapse;}
+.cart-table th{font-size:12px;font-weight:600;letter-spacing:1px;text-transform:uppercase;color:#aaa;border-bottom:2px solid var(--border);padding:12px 16px;}
+.cart-table td{padding:16px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.cart-item-img{width:64px;height:64px;border-radius:10px;object-fit:cover;}
+.cart-item-name{font-weight:600;font-size:15px;}
+.cart-item-sub{font-size:12px;color:#aaa;margin-top:2px;}
+.remove-btn{background:none;border:none;color:#ccc;font-size:18px;cursor:pointer;transition:color 0.2s;}
+.remove-btn:hover{color:var(--red);}
+
+.cart-summary{background:#fff;border-radius:16px;border:1px solid var(--border);padding:28px;}
+.cart-summary h4{font-family:'Playfair Display',serif;font-size:22px;margin-bottom:20px;}
+.summary-row{display:flex;justify-content:space-between;font-size:14px;margin-bottom:12px;color:#555;}
+.summary-row.total{font-size:17px;font-weight:700;color:var(--text);border-top:2px solid var(--border);padding-top:14px;margin-top:8px;}
+.coupon-row{display:flex;gap:8px;margin:18px 0;}
+.coupon-row input{flex:1;border:1px solid var(--border);border-radius:8px;padding:10px 14px;font-size:13px;outline:none;}
+.coupon-row input:focus{border-color:var(--orange);}
+.coupon-row button{background:var(--text);color:#fff;border:none;border-radius:8px;padding:10px 18px;font-size:13px;cursor:pointer;}
+.btn-checkout{width:100%;padding:14px;background:linear-gradient(135deg,var(--deep),var(--orange));color:#fff;border:none;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;transition:opacity 0.2s,transform 0.2s;letter-spacing:0.5px;}
+.btn-checkout:hover{opacity:0.9;transform:scale(1.02);}
+.secure-note{text-align:center;font-size:12px;color:#aaa;margin-top:10px;}
+
+/* ── CHECKOUT PAGE ── */
+.checkout-page{padding:50px 0;}
+.checkout-page h2{font-family:'Playfair Display',serif;font-size:34px;margin-bottom:8px;}
+.step-bar{display:flex;gap:0;margin-bottom:40px;}
+.step{flex:1;text-align:center;font-size:12px;font-weight:600;letter-spacing:0.5px;padding:12px;position:relative;color:#bbb;border-bottom:3px solid var(--border);}
+.step.active{color:var(--orange);border-bottom-color:var(--orange);}
+.step.done{color:var(--green);border-bottom-color:var(--green);}
+.step-num{display:block;font-size:18px;font-weight:700;margin-bottom:2px;}
+
+.form-section{background:#fff;border-radius:16px;border:1px solid var(--border);padding:28px;margin-bottom:20px;}
+.form-section h5{font-size:15px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:#aaa;margin-bottom:20px;}
+.form-group{margin-bottom:18px;}
+.form-group label{display:block;font-size:13px;font-weight:600;margin-bottom:6px;color:var(--text);}
+.form-group input,.form-group select,.form-group textarea{width:100%;border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:14px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:var(--orange);box-shadow:0 0 0 3px rgba(255,123,0,0.1);}
+.form-group textarea{resize:vertical;min-height:80px;}
+.btn-pay{width:100%;padding:15px;background:linear-gradient(135deg,var(--deep),var(--golden));color:#fff;border:none;border-radius:30px;font-size:16px;font-weight:700;cursor:pointer;transition:opacity 0.2s,transform 0.2s;letter-spacing:0.5px;}
+.btn-pay:hover{opacity:0.9;transform:scale(1.02);}
+
+.payment-option{border:2px solid var(--border);border-radius:12px;padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:14px;margin-bottom:12px;transition:border-color 0.2s,background 0.2s;}
+.payment-option:hover,.payment-option.selected{border-color:var(--orange);background:var(--light);}
+.payment-option input[type=radio]{accent-color:var(--orange);width:18px;height:18px;}
+.payment-option .opt-label{font-weight:600;font-size:15px;}
+.payment-option .opt-sub{font-size:12px;color:#aaa;margin-top:2px;}
+
+/* Order summary sidebar */
+.order-sidebar{background:#fff;border-radius:16px;border:1px solid var(--border);padding:24px;position:sticky;top:80px;}
+.order-sidebar h4{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:18px;}
+.sidebar-item{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.sidebar-item:last-of-type{border-bottom:none;}
+.sidebar-item-name{font-weight:500;}
+.sidebar-item-price{font-weight:700;color:var(--deep);}
+
+/* ── SUCCESS PAGE ── */
+.success-page{padding:80px 0;text-align:center;}
+.success-icon{font-size:72px;margin-bottom:20px;}
+.success-page h2{font-family:'Playfair Display',serif;font-size:38px;margin-bottom:10px;}
+.success-page p{color:#777;font-size:16px;max-width:420px;margin:0 auto 32px;}
+.order-id-box{display:inline-block;background:var(--light);border:2px dashed var(--golden);border-radius:12px;padding:14px 32px;font-size:18px;font-weight:700;color:var(--deep);margin-bottom:32px;}
+.track-steps{max-width:480px;margin:0 auto 40px;}
+.track-step{display:flex;align-items:center;gap:16px;text-align:left;margin-bottom:0;}
+.track-step .tline{display:flex;flex-direction:column;align-items:center;gap:0;}
+.track-dot{width:16px;height:16px;border-radius:50%;background:var(--orange);flex-shrink:0;}
+.track-dot.done{background:var(--green);}
+.track-vline{width:2px;height:36px;background:var(--border);}
+.track-info h6{font-weight:700;font-size:14px;margin:0 0 2px;}
+.track-info p{font-size:12px;color:#aaa;margin:0;}
+.btn-continue{padding:13px 36px;background:var(--orange);color:#fff;border:none;border-radius:30px;font-size:15px;font-weight:700;cursor:pointer;transition:background 0.2s;}
+.btn-continue:hover{background:var(--deep);}
+
+/* ── FOOTER ── */
+footer{background:#111;color:rgba(255,255,255,0.5);padding:28px;text-align:center;font-size:13px;}
+footer span{color:var(--golden);}
+
+/* ── TOAST ── */
+.toast-msg{position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a1208;color:#fff;padding:12px 28px;border-radius:30px;font-size:14px;font-weight:500;z-index:9999;opacity:0;transition:opacity 0.3s;pointer-events:none;white-space:nowrap;}
+.toast-msg.show{opacity:1;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .nav-links{display:none;}
+  .shop-hero h1{font-size:30px;}
+  .cart-table th:nth-child(3),.cart-table td:nth-child(3){display:none;}
+}
+</style>
+</head>
+<body>
+
+<div class="toast-msg" id="toast"></div>
+
+<!-- TOPBAR -->
+<div class="topbar">🥭 Free Delivery on Orders Above ₹2500 &nbsp;|&nbsp; 100% Natural Ripening</div>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="container d-flex justify-content-between align-items-center">
+    <a class="brand" href="index.html">🥭 MangoStore</a>
+    <div class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="#" onclick="showPage('shop')">Shop</a>
+      <a href="admin.html" style="color:#aaa;font-size:13px;">Admin ↗</a>
+    </div>
+    <button class="cart-btn" onclick="showPage('cart')">
+      🛒 Cart <span class="cart-count" id="cartCount">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ════════════════════════════════
+     PAGE: SHOP
+════════════════════════════════ -->
+<div class="page active" id="page-shop">
+
+  <div class="shop-hero">
+    <h1>Our Mango Collection</h1>
+    <p>Handpicked · Naturally Ripened · Doorstep Delivery</p>
+  </div>
+
+  <div class="filter-bar">
+    <div class="container d-flex gap-3 align-items-center flex-wrap">
+      <select id="sortSelect" onchange="renderProducts()">
+        <option value="default">Sort: Default</option>
+        <option value="low">Price: Low to High</option>
+        <option value="high">Price: High to Low</option>
+      </select>
+      <input type="text" id="searchInput" placeholder="🔍  Search mangoes..." oninput="renderProducts()" style="min-width:200px;">
+      <span id="productCount" style="font-size:13px;color:#aaa;margin-left:auto;"></span>
+    </div>
+  </div>
+
+  <div class="product-grid">
+    <div class="container">
+      <div class="row g-4" id="productGrid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ════════════════════════════════
+     PAGE: CART
+════════════════════════════════ -->
+<div class="page" id="page-cart">
+  <div class="cart-page">
+    <div class="container">
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <button onclick="showPage('shop')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;">←</button>
+        <h2 style="margin:0;">Your Cart</h2>
+      </div>
+
+      <div id="cartEmpty" class="cart-empty" style="display:none;">
+        <div class="emoji">🛒</div>
+        <h5>Your cart is empty</h5>
+        <p style="color:#aaa;font-size:14px;margin-top:8px;">Add some delicious mangoes!</p>
+        <button class="btn-addcart mt-4" style="width:auto;padding:12px 32px;" onclick="showPage('shop')">Browse Products</button>
+      </div>
+
+      <div id="cartContent">
+        <div class="row g-4">
+          <div class="col-lg-8">
+            <div style="background:#fff;border-radius:16px;border:1px solid var(--border);overflow:hidden;">
+              <table class="cart-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Qty</th>
+                    <th>Price</th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody id="cartBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="col-lg-4">
+            <div class="cart-summary">
+              <h4>Order Summary</h4>
+              <div class="summary-row"><span>Subtotal</span><span id="summarySubtotal">₹0</span></div>
+              <div class="summary-row"><span>Delivery</span><span id="summaryDelivery">₹0</span></div>
+              <div class="summary-row"><span id="discountLabel" style="color:var(--green);display:none;">Discount</span><span id="summaryDiscount" style="color:var(--green);display:none;"></span></div>
+              <div class="summary-row total"><span>Total</span><span id="summaryTotal">₹0</span></div>
+              <div class="coupon-row">
+                <input type="text" id="couponInput" placeholder="Coupon code (try MANGO10)">
+                <button onclick="applyCoupon()">Apply</button>
+              </div>
+              <button class="btn-checkout" onclick="showPage('checkout')">Proceed to Checkout →</button>
+              <p class="secure-note">🔒 Secure & Encrypted Checkout</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PAGE: CHECKOUT
+════════════════════════════════ -->
+<div class="page" id="page-checkout">
+  <div class="checkout-page">
+    <div class="container">
+
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <button onclick="showPage('cart')" style="background:none;border:none;font-size:20px;cursor:pointer;color:#aaa;">←</button>
+        <h2 style="margin:0;">Checkout</h2>
+      </div>
+
+      <div class="step-bar mb-4">
+        <div class="step done"><span class="step-num">✓</span>Cart</div>
+        <div class="step active"><span class="step-num">2</span>Details</div>
+        <div class="step"><span class="step-num">3</span>Payment</div>
+        <div class="step"><span class="step-num">4</span>Confirm</div>
+      </div>
+
+      <div class="row g-4">
+        <div class="col-lg-7">
+
+          <!-- Delivery Info -->
+          <div class="form-section">
+            <h5>📦 Delivery Information</h5>
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label>First Name</label>
+                  <input type="text" id="firstName" placeholder="Rahul">
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="form-group">
+                  <label>Last Name</label>
+                  <input type="text" id="lastName" placeholder="Sharma">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Mobile Number</label>
+              <input type="tel" id="phone" placeholder="+91 98765 43210">
+            </div>
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="email" placeholder="rahul@gmail.com">
+            </div>
+            <div class="form-group">
+              <label>Flat / House No. & Building</label>
+              <input type="text" id="address1" placeholder="A-204, Sunshine Towers">
+            </div>
+            <div class="form-group">
+              <label>Area / Locality</label>
+              <input type="text" id="address2" placeholder="Andheri West">
+            </div>
+            <div class="row">
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label>City</label>
+                  <input type="text" id="city" placeholder="Mumbai">
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label>State</label>
+                  <select id="state">
+                    <option value="">Select</option>
+                    <option>Maharashtra</option><option>Gujarat</option>
+                    <option>Karnataka</option><option>Delhi</option>
+                    <option>Tamil Nadu</option><option>Goa</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-sm-4">
+                <div class="form-group">
+                  <label>PIN Code</label>
+                  <input type="text" id="pin" placeholder="400001" maxlength="6">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Delivery Notes (optional)</label>
+              <textarea id="notes" placeholder="Leave at door, call before delivery, etc."></textarea>
+            </div>
+          </div>
+
+          <!-- Payment -->
+          <div class="form-section">
+            <h5>💳 Payment Method</h5>
+            <div class="payment-option selected" onclick="selectPayment(this,'upi')">
+              <input type="radio" name="pay" checked>
+              <div>
+                <div class="opt-label">UPI / PhonePe / GPay</div>
+                <div class="opt-sub">Instant payment via UPI apps</div>
+              </div>
+            </div>
+            <div class="payment-option" onclick="selectPayment(this,'card')">
+              <input type="radio" name="pay">
+              <div>
+                <div class="opt-label">Credit / Debit Card</div>
+                <div class="opt-sub">Visa, Mastercard, RuPay</div>
+              </div>
+            </div>
+            <div class="payment-option" onclick="selectPayment(this,'cod')">
+              <input type="radio" name="pay">
+              <div>
+                <div class="opt-label">Cash on Delivery</div>
+                <div class="opt-sub">Pay when your order arrives</div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-pay" onclick="placeOrder()">🥭 Place Order & Pay</button>
+
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-5">
+          <div class="order-sidebar">
+            <h4>Order Summary</h4>
+            <div id="checkoutItems"></div>
+            <div style="border-top:2px solid var(--border);padding-top:16px;margin-top:4px;">
+              <div class="summary-row d-flex justify-content-between" style="font-size:14px;color:#555;margin-bottom:8px;"><span>Subtotal</span><span id="coSubtotal">₹0</span></div>
+              <div class="summary-row d-flex justify-content-between" style="font-size:14px;color:#555;margin-bottom:8px;"><span>Delivery</span><span id="coDelivery">₹0</span></div>
+              <div class="summary-row d-flex justify-content-between" style="font-size:16px;font-weight:700;color:var(--text);"><span>Total</span><span id="coTotal" style="color:var(--deep);">₹0</span></div>
+            </div>
+            <div style="margin-top:18px;background:var(--light);border-radius:10px;padding:14px;font-size:13px;color:#777;line-height:1.7;">
+              🚚 <strong>Estimated Delivery:</strong> 24–48 hours<br>
+              📦 <strong>Packaging:</strong> Eco-friendly cushioned box<br>
+              🌿 <strong>Quality:</strong> 100% natural ripening
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════
+     PAGE: SUCCESS
+════════════════════════════════ -->
+<div class="page" id="page-success">
+  <div class="success-page">
+    <div class="container">
+      <div class="success-icon">🎉</div>
+      <h2>Order Placed Successfully!</h2>
+      <p>Thank you! Your mangoes are on their way. You'll receive a confirmation SMS & email shortly.</p>
+      <div class="order-id-box">Order ID: <span id="successOrderId">#MNG-000</span></div>
+      <div class="track-steps">
+        <div class="d-flex gap-3 align-items-start mb-0">
+          <div class="tline">
+            <div class="track-dot done"></div>
+            <div class="track-vline"></div>
+          </div>
+          <div class="track-info pb-3">
+            <h6>Order Confirmed ✓</h6>
+            <p>We've received your order</p>
+          </div>
+        </div>
+        <div class="d-flex gap-3 align-items-start">
+          <div class="tline">
+            <div class="track-dot"></div>
+            <div class="track-vline"></div>
+          </div>
+          <div class="track-info pb-3">
+            <h6>Packing</h6>
+            <p>Farm fresh mangoes being packed</p>
+          </div>
+        </div>
+        <div class="d-flex gap-3 align-items-start">
+          <div class="tline">
+            <div class="track-dot"></div>
+            <div class="track-vline"></div>
+          </div>
+          <div class="track-info pb-3">
+            <h6>Out for Delivery</h6>
+            <p>On the way to you</p>
+          </div>
+        </div>
+        <div class="d-flex gap-3 align-items-start">
+          <div class="tline">
+            <div class="track-dot"></div>
+          </div>
+          <div class="track-info">
+            <h6>Delivered 🥭</h6>
+            <p>Enjoy your Ratnagiri Alphonso!</p>
+          </div>
+        </div>
+      </div>
+      <button class="btn-continue" onclick="continueShopping()">Continue Shopping</button>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer><p>© 2026 <span>MangoStore</span> | Ratnagiri Alphonso Mango</p></footer>
+
+<script>
+// ── DATA ──
+let products = JSON.parse(localStorage.getItem('mangoProducts')) || [
+  {id:1,name:'Alphonso Mango',price:1200,desc:'The king of mangoes. Rich, creamy & aromatic.',badge:'Bestseller',img:'https://images.unsplash.com/photo-1553279768-865429fa0078?w=600&q=80',stock:50,weight:'3 kg'},
+  {id:2,name:'Kesar Mango',price:950,desc:'Saffron-hued sweetness from Gujarat farms.',badge:'Popular',img:'https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=600&q=80',stock:40,weight:'3 kg'},
+  {id:3,name:'Organic Mango',price:1400,desc:'Certified organic, zero pesticides, pure taste.',badge:'Organic',img:'https://images.unsplash.com/photo-1589820296156-2454bb8a6ad1?w=600&q=80',stock:30,weight:'3 kg'},
+];
+let cart = JSON.parse(localStorage.getItem('mangoCart')) || {};
+let discount = 0;
+let selectedPayment = 'upi';
+let orders = JSON.parse(localStorage.getItem('mangoOrders')) || [];
+
+// ── PAGES ──
+function showPage(p){
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  window.scrollTo(0,0);
+  if(p==='cart') renderCart();
+  if(p==='checkout') renderCheckoutSidebar();
+}
+
+// ── TOAST ──
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ── PRODUCTS ──
+function renderProducts(){
+  const sort=document.getElementById('sortSelect').value;
+  const q=(document.getElementById('searchInput').value||'').toLowerCase();
+  let list=[...products].filter(p=>p.name.toLowerCase().includes(q)||p.desc.toLowerCase().includes(q));
+  if(sort==='low') list.sort((a,b)=>a.price-b.price);
+  if(sort==='high') list.sort((a,b)=>b.price-a.price);
+  document.getElementById('productCount').textContent=list.length+' products';
+  const grid=document.getElementById('productGrid');
+  if(!list.length){grid.innerHTML='<div class="col-12 text-center py-5" style="color:#aaa;">No products found</div>';return;}
+  grid.innerHTML=list.map(p=>`
+    <div class="col-md-6 col-lg-4">
+      <div class="pcard">
+        <div class="pcard-img">
+          <img src="${p.img}" alt="${p.name}" onerror="this.src='https://images.unsplash.com/photo-1553279768-865429fa0078?w=600&q=80'">
+          ${p.badge?`<span class="pcard-badge">${p.badge}</span>`:''}
+        </div>
+        <div class="pcard-body">
+          <h5>${p.name}</h5>
+          <p class="desc">${p.desc}</p>
+          <div class="pcard-footer">
+            <div class="price">₹${p.price.toLocaleString('en-IN')}<small>/ box (${p.weight})</small></div>
+            <div style="font-size:12px;color:${p.stock>0?'var(--green)':'var(--red)'};">${p.stock>0?'In Stock':'Sold Out'}</div>
+          </div>
+          <div class="qty-ctrl">
+            <button onclick="changeQty(${p.id},-1)">−</button>
+            <span id="qty-${p.id}">${cart[p.id]||0}</span>
+            <button onclick="changeQty(${p.id},1)">+</button>
+          </div>
+          <button class="btn-addcart ${cart[p.id]>0?'added':''}" id="btn-${p.id}" onclick="addToCart(${p.id})" ${p.stock===0?'disabled':''}>
+            ${p.stock===0?'Sold Out':cart[p.id]>0?'✓ Added to Cart':'Add to Cart'}
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function changeQty(id,delta){
+  cart[id]=(cart[id]||0)+delta;
+  if(cart[id]<0) cart[id]=0;
+  saveCart();
+  const qEl=document.getElementById('qty-'+id);
+  const bEl=document.getElementById('btn-'+id);
+  if(qEl) qEl.textContent=cart[id];
+  if(bEl){
+    bEl.textContent=cart[id]>0?'✓ Added to Cart':'Add to Cart';
+    bEl.className='btn-addcart '+(cart[id]>0?'added':'');
+  }
+}
+
+function addToCart(id){
+  if(!cart[id]) cart[id]=1;
+  else cart[id]++;
+  saveCart();
+  const qEl=document.getElementById('qty-'+id);
+  const bEl=document.getElementById('btn-'+id);
+  if(qEl) qEl.textContent=cart[id];
+  if(bEl){bEl.textContent='✓ Added to Cart';bEl.className='btn-addcart added';}
+  toast('🥭 Added to cart!');
+}
+
+function saveCart(){
+  localStorage.setItem('mangoCart',JSON.stringify(cart));
+  updateCartCount();
+}
+
+function updateCartCount(){
+  const count=Object.values(cart).reduce((s,v)=>s+(v||0),0);
+  document.getElementById('cartCount').textContent=count;
+}
+
+// ── CART ──
+function renderCart(){
+  const items=Object.entries(cart).filter(([,v])=>v>0);
+  const empty=document.getElementById('cartEmpty');
+  const content=document.getElementById('cartContent');
+  if(!items.length){empty.style.display='block';content.style.display='none';return;}
+  empty.style.display='none';content.style.display='block';
+  const body=document.getElementById('cartBody');
+  body.innerHTML=items.map(([id,qty])=>{
+    const p=products.find(x=>x.id==id);
+    if(!p) return '';
+    return `<tr>
+      <td>
+        <div class="d-flex align-items-center gap-3">
+          <img src="${p.img}" class="cart-item-img" onerror="this.src='https://images.unsplash.com/photo-1553279768-865429fa0078?w=300'">
+          <div>
+            <div class="cart-item-name">${p.name}</div>
+            <div class="cart-item-sub">${p.weight} box</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="qty-ctrl" style="justify-content:center;">
+          <button onclick="cartQty(${id},-1)">−</button>
+          <span>${qty}</span>
+          <button onclick="cartQty(${id},1)">+</button>
+        </div>
+      </td>
+      <td style="font-weight:700;">₹${(p.price*qty).toLocaleString('en-IN')}</td>
+      <td><button class="remove-btn" onclick="removeItem(${id})">✕</button></td>
+    </tr>`;
+  }).join('');
+  updateCartSummary();
+}
+
+function cartQty(id,delta){
+  cart[id]=(cart[id]||0)+delta;
+  if(cart[id]<=0) delete cart[id];
+  saveCart(); renderCart();
+}
+
+function removeItem(id){
+  delete cart[id];
+  saveCart(); renderCart();
+}
+
+function updateCartSummary(){
+  const subtotal=Object.entries(cart).reduce((s,[id,qty])=>{
+    const p=products.find(x=>x.id==id);
+    return s+(p?p.price*qty:0);
+  },0);
+  const delivery=subtotal>2500?0:150;
+  const total=subtotal+delivery-discount;
+  document.getElementById('summarySubtotal').textContent='₹'+subtotal.toLocaleString('en-IN');
+  document.getElementById('summaryDelivery').textContent=delivery===0?'FREE':'₹'+delivery;
+  document.getElementById('summaryTotal').textContent='₹'+total.toLocaleString('en-IN');
+  if(discount>0){
+    document.getElementById('discountLabel').style.display='';
+    document.getElementById('summaryDiscount').style.display='';
+    document.getElementById('summaryDiscount').textContent='-₹'+discount;
+  }
+  return {subtotal,delivery,total};
+}
+
+function applyCoupon(){
+  const code=document.getElementById('couponInput').value.trim().toUpperCase();
+  if(code==='MANGO10'){discount=100;toast('✅ Coupon applied! ₹100 off');}
+  else if(code==='FRESH20'){discount=200;toast('✅ Coupon applied! ₹200 off');}
+  else{toast('❌ Invalid coupon code');}
+  updateCartSummary();
+}
+
+// ── CHECKOUT ──
+function renderCheckoutSidebar(){
+  const items=Object.entries(cart).filter(([,v])=>v>0);
+  const body=document.getElementById('checkoutItems');
+  body.innerHTML=items.map(([id,qty])=>{
+    const p=products.find(x=>x.id==id);
+    if(!p) return '';
+    return `<div class="sidebar-item">
+      <span class="sidebar-item-name">${p.name} × ${qty}</span>
+      <span class="sidebar-item-price">₹${(p.price*qty).toLocaleString('en-IN')}</span>
+    </div>`;
+  }).join('');
+  const subtotal=Object.entries(cart).reduce((s,[id,qty])=>{const p=products.find(x=>x.id==id);return s+(p?p.price*qty:0);},0);
+  const delivery=subtotal>2500?0:150;
+  document.getElementById('coSubtotal').textContent='₹'+subtotal.toLocaleString('en-IN');
+  document.getElementById('coDelivery').textContent=delivery===0?'FREE':'₹'+delivery;
+  document.getElementById('coTotal').textContent='₹'+(subtotal+delivery-discount).toLocaleString('en-IN');
+}
+
+function selectPayment(el,type){
+  document.querySelectorAll('.payment-option').forEach(o=>{o.classList.remove('selected');o.querySelector('input').checked=false;});
+  el.classList.add('selected');
+  el.querySelector('input').checked=true;
+  selectedPayment=type;
+}
+
+function placeOrder(){
+  const fn=document.getElementById('firstName').value.trim();
+  const ph=document.getElementById('phone').value.trim();
+  const ad=document.getElementById('address1').value.trim();
+  const ci=document.getElementById('city').value.trim();
+  const pi=document.getElementById('pin').value.trim();
+  if(!fn||!ph||!ad||!ci||!pi){toast('⚠️ Please fill all required fields');return;}
+  const subtotal=Object.entries(cart).reduce((s,[id,qty])=>{const p=products.find(x=>x.id==id);return s+(p?p.price*qty:0);},0);
+  const delivery=subtotal>2500?0:150;
+  const orderId='MNG-'+Date.now().toString().slice(-6);
+  const order={
+    id:orderId,
+    date:new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'}),
+    time:new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+    customer:{name:fn+' '+(document.getElementById('lastName').value||''),phone:ph,email:document.getElementById('email').value,address:`${ad}, ${document.getElementById('address2').value||''}, ${ci}, ${document.getElementById('state').value} - ${pi}`},
+    items:Object.entries(cart).filter(([,v])=>v>0).map(([id,qty])=>{const p=products.find(x=>x.id==id);return{name:p.name,qty,price:p.price,total:p.price*qty};}),
+    subtotal,delivery,discount,total:subtotal+delivery-discount,
+    payment:selectedPayment,status:'Confirmed',notes:document.getElementById('notes').value
+  };
+  orders.unshift(order);
+  localStorage.setItem('mangoOrders',JSON.stringify(orders));
+  document.getElementById('successOrderId').textContent='#'+orderId;
+  cart={};
+  discount=0;
+  saveCart();
+  showPage('success');
+}
+
+function continueShopping(){
+  renderProducts();
+  showPage('shop');
+}
+
+// ── INIT ──
+renderProducts();
+updateCartCount();
+</script>
+</body>
+</html>
